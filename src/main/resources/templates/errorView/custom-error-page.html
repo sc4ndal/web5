@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<link rel="stylesheet" th:href="@{/css/error.css}">
+</head>
+<body>
+	<div class="error-box">
+		<h1>처리 중 오류가 발생했습니다.</h1>
+		
+		<p>
+			요청은 정상적으로 전달됐지만,<br>
+			내부 조건이 맞지 않아 요청을 완료할 수 없었습니다. <br>
+			<span th:text="${message}" id="error-messages"></span>
+		</p>
+		
+		<a th:href="@{/}">홈으로 돌아가기</a>
+		
+	</div>
+</body>
+</html>

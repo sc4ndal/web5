@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>joinForm.html</title>
+	<link rel="stylesheet" th:href="@{/css/main.css}" type="text/css">
+	<script>
+		window.onload = () => {
+			const joinForm = document.querySelector('#joinForm');
+			const openButton = document.querySelector('#openButton');
+			const memberId = document.querySelector('#memberId');
+			
+			// submit 이벤틔
+			joinForm.addEventListener('submit', validation);
+			
+			// ID 중복 확인 버튼 클릭
+			openButton.addEventListener('click', idWindowOpen);
+			memberId.addEventListener('click', idWindowOpen);
+		};
+		// 유효성 검사
+		function validation(e) {
+			let id      = document.querySelector('#memberId');
+			let pw      = document.querySelector('#memberPassword');
+			let pw2     = document.querySelector('#memberPassword2');
+			let name    = document.querySelector('#memberName');
+			let msgBox  = document.querySelector('#msgBox');
+			
+			msgBox.textContent = '';
+			
+			if(id.value.length < 3 || id.value.length > 10) {
+				msgBox.textContent = "아이디는 3~10자 사이로 입력하세요.";
+				e.preventDefault();
+				return;
+			}
+			
+			if (pw.value.length < 3 || pw.value.length > 10) {
+				msgBox.textContent = "비밀번호는 3~10자 사이로 입력하세요.";
+				e.preventDefault();
+				return;
+			}
+			if(pw.value !== pw2.value) {
+				msgBox.textContent = "비밀번호가 일치하지 않습니다.";
+				e.preventDefault();
+				return;
+			}
+			if (name.value.trim() === "") {
+				msgBox.textContent = "이름을 입력해주세요.";
+				e.preventDefault();
+				return;
+			}
+		}
+		// ID 중복 확인창 열기
+		function idWindowOpen() {
+			// 팝업창 크기 지정
+			const width = 600;
+			const height = 400;
+			
+			/*
+			현재 모니터 기준 좌표
+			window.screenX       : 현재 브라우저 창의 화면상 시작 X 좌표
+			window.outerWidth    : 브라우저 전체 가로 길이 (탭, 테두리 포함)
+			window.screenY       : 현재 브라우저 화면상 Y 좌표
+			window.outerHeight   : 브라우저 전체 세로 길이
+			 */
+			console.log('screenX : ', window.screenX);
+			console.log('screenY : ', window.screenY);
+			console.log('outerWidth : ', window.outerWidth);
+			console.log('outerHeight : ', window.outerHeight);
+			
+			const left  = window.screenX + (window.outerWidth / 2) - (width / 2);
+			const top   = window.screenY + (window.outerHeight / 2) - (height / 2);
+			
+			// 팝업창 = window.open(URL, 창의 이름, 창의 위치 및 크기)
+			let w = window.open('/member/idCheck', 'idCheck', `width=${width}, height=${height}, left=${left}, top=${top}`);
+			
+			// w.document.write("<p>자식창!</p>");
+			
+			// 팝업창에 데이터 전달
+			// setTimeout(() => {
+			// 	w.document.querySelector("#test").textContent = "팝업창에 값 전달";
+			// }, 2000);
+			
+			// 팝업창 강제 종료
+			// w.close();
+		}
+	</script>
+</head>
+<body>
+	<header>
+		<h1>[ 회원가입 ]</h1>
+	</header>
+
+	<section>
+		<div id="msgBox" style="color:red;"></div>
+		<form th:action="@{/member/join}" id="joinForm" method="post">
+			<table>
+				<tr>
+					<th>ID</th>
+					<td>
+						<input type="text" name="memberId" id="memberId" maxlength="10" th:value="${searchId}" placeholder="ID중복확인 이용" readonly>
+						<input type="button" id="openButton" value="ID중복확인">
+					</td>
+				</tr>
+				<tr>
+					<th>비밀번호</th>
+					<td>
+						<input type="password" name="memberPassword" id="memberPassword" placeholder="비밀번호 입력">
+						<input type="password" name="memberPassword2" id="memberPassword2" placeholder="비밀번호 확인 입력">
+					</td>
+				</tr>
+				<tr>
+					<th>이름</th>
+					<td><input type="text" name="memberName" id="memberName" placeholder="이름 입력"></td>
+				</tr>
+				<tr>
+					<th>이메일</th>
+					<td><input type="email" name="email" id="email" placeholder="이메일 입력"></td>
+				</tr>
+				<tr>
+					<th>전화번호</th>
+					<td><input type="text" name="phone" id="phone" placeholder="전화번호 입력"></td>
+				</tr>
+				<tr>
+					<th>주소</th>
+					<td><input type="text" name="address" id="address" placeholder="주소 입력" style="width: 300px;"></td>
+				</tr>
+			</table>
+			<br>
+			<button type="submit">가입</button>
+			<button type="reset">초기화</button>
+		</form>
+	</section>
+</body>
+</html>

@@ -1,0 +1,62 @@
+@charset "UTF-8";
+
+body {
+    font-family: 'Helvetica', 'Arial', sans-serif';
+    background: linear-gradient(to right, #ffecd2, #fcb69f);
+    margin: 0;
+    padding: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+
+    color: #333;
+}
+
+/* 중앙 박스 스타일 */
+.error-box {
+    background: rgba(255, 255, 255, 0.85);
+    padding: 40px 60px;
+    border-radius: 20px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    text-align: center;
+    max-width: 500px;
+}
+
+/* 제목 */
+.error-box h1 {
+    font-size: 28px;
+    color: #ff7e5f;
+    margin-bottom: 20px;
+}
+
+/* 본문 */
+.error-box p {
+    font-size: 17px;
+    color: #555;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+/* 버튼 */
+.error-box a {
+    display: inline-block;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+    color: #fff;
+    text-decoration: none;
+
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-size: 16px;
+
+    transition: background 0.3s ease;
+}
+
+.error-box a:hover {
+    background: linear-gradient(to right, #feb47b, #ff7e5f);
+}
+
+#error-messages {
+    color: red;
+}

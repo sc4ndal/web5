@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmls:th="thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>idCheck.html</title>
+	<link rel="stylesheet" th:href="@{/css/main.css}" type="text/css">
+	<script>
+		window.onload = () => {
+			document.querySelector('#searchForm').addEventListener('submit', e => {
+				const searchId = document.querySelector('#searchId').value;
+				if (searchId.trim().length < 3 || searchId.trim().length > 10) {
+					alert("검색할 ID를 3~10자로 입력하세요.");
+					e.preventDefault();
+				}
+			});
+			const sendBtn = document.querySelector('#sendBtn');
+			if (sendBtn) {
+				sendBtn.addEventListener('click', function () {
+					const id = this.dataset.id;
+					// window.opener = "부모창 참조 객체"
+					opener.document.querySelector('#memberId').value = id;
+					// 현재 창 종료
+					window.close();
+				});
+			}
+		};
+	</script>
+</head>
+<body>
+	<header>
+		<h1>[ ID 중복 확인 ]</h1>
+	</header>
+	<br>
+<section>
+	<div id="test"></div>
+	<form th:action="@{/member/idCheck}" method="post" id="searchForm">
+		검색할 ID <input type="text" name="searchId" id="searchId">
+				 <input type="submit" value="검색">
+	</form>
+	
+<!--	검색 후에만 출력-->
+	<div th:if="${result != null}">
+<!--		사용 가능한 경우에만 출력 -->
+		<div th:if="${result}">
+			<p><span th:text="|${searchId} : 사용할 수 있는 ID 입니다.|"></span></p>
+			<p><input type="button" value="ID사용하기" id="sendBtn" th:data-id="${searchId}"></p>
+		</div>
+<!--		사용 불가능한 경우에만 출력-->
+		<div th:if="${not result}">
+			<p><span th:text="|${searchId} : 이미 사용중인 ID입니다.|"></span></p>
+		</div>
+	</div>
+</section>
+</body>
+</html>
