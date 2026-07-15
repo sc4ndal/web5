@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 	<meta charset="UTF-8">
 	<title>home.html</title>
@@ -7,8 +8,21 @@
 <body>
 	<h1>[ web5 ]</h1>
 
+	<p sec:authorize="isAuthenticated()">
+		<span th:text="|${#authentication.name} 님 로그인중|"></span>
+	</p>
 <ul>
+<!--	로그인 안 했을 때 -->
+	<th:block sec:authorize="not isAuthenticated()">
 	<li><a th:href="@{/member/join}">회원가입</a></li>
+	<li><a th:href="@{/member/loginForm}">로그인</a></li>
+	</th:block>
+<!--	로그인 했을때 -->
+	<th:block sec:authorize="isAuthenticated()">
+	<li><a th:href="@{/member/logout}">로그아웃</a></li>
+	</th:block>
+	
+	<li><a th:href="@{/security}">시큐리티 타임리프 문법</a></li>
 </ul>
 </body>
 </html>

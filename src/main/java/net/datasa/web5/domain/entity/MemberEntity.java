@@ -5,7 +5,6 @@ import lombok.*;
 
 /*
 	회원 정보 Entity
-	
  */
 @Builder
 @AllArgsConstructor

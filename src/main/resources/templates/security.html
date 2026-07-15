@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8">
+	<title>security.html</title>
+</head>
+<body>
+	<h1>[ Security 타임리프 문법 ]</h1>
+
+<!--	1. 로그인 안 했을 때-->
+<div>
+	<p sec:authorize="isAnonymous()">로그인 안됨</p>
+	<p sec:authorize="!isAuthenticated()">로그인 안됨2</p>
+</div>
+
+<!--    2. 로그인 했을 때 -->
+<div sec:authorize="isAuthenticated()">
+	<h3>[로그인 상태 완료]</h3>
+	
+	<h5>권한 체크</h5>
+<!--	hasRole 자동으로 'ROLE_'를 붙여서 'ROLE_USER'를 검사 -->
+	<p sec:authorize="hasRole('USER')">일반사용자 권한</p>
+	<p sec:authorize="hasRole('ADMIN')">관리자 권한</p>
+	
+<!--	ROLE_USER 또는 ROLE_ADMIN 중 하나라도 해당되면 -->
+	<p sec:authorize="hasAnyRole('USER', 'ADMIN')">등록된 사용자입니다.</p>
+<!--	hasAuthority는 문자열값 'ROLE_ADMIN' 그대로 검사함 -->
+	<p sec:authorize="hasAuthority('ROLE_ADMIN')">관리자 권한 있음</p>
+	
+	<h5>값 출력</h5>
+<!--
+	Authentication : Security 가 관리하는 인증 객체
+	Principal : 사용자 정보 객체 (UserDetails 객체)
+-->
+	<p>ID : <span th:text="${#authentication.name}">id</span></p>
+	<p>ID2 : <span sec:authentication="principal.username">id2</span></p>
+	<p>권한 : <span sec:authentication="principal.authorities">[ROLE_USER]</span></p>
+	<p>객체 정보 : <span sec:authentication="principal">인증 정보 객체</span></p>
+	
+	<h5>아이디 비교</h5>
+	<p sec:authorize="authentication.name == 'aaa'">아이디가 aaa</p>
+	<p sec:authorize="authentication.name != 'aaa'">아이디가 aaa가 아님</p>
+</div>
+</body>
+</html>
