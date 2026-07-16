@@ -112,7 +112,7 @@ public class MemberService {
 		
 		// 3. SecurityContext 생성 후 주입
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
-		context.setAuthentication(auth);		// 인증 객체 등록
+		context.setAuthentication(auth);        // 인증 객체 등록
 		
 		// 4. '현재 요청을 처리 중인 스레드'의 보관함에 SecurityContext를 저장
 		SecurityContextHolder.setContext(context);
@@ -126,5 +126,57 @@ public class MemberService {
 		
 		Authentication info = SecurityContextHolder.getContext().getAuthentication();
 		log.debug(">>> 직접 만든 인증객체 정보 : {}", info);
+	}
+	
+//	public MemberDTO info(UserDetails user) {
+//		MemberEntity entity = mr.findById(user.getUsername()).orElseThrow(() -> new EntityNotFoundException("회원 없음"));
+//		MemberDTO dto = MemberDTO.builder()
+//				.memberId(entity.getMemberId())
+//				.memberName(entity.getMemberName())
+//				.email(entity.getEmail())
+//				.phone(entity.getPhone())
+//				.address(entity.getAddress())
+//				.build();
+//		return dto;
+//	}
+	//---------------------------------------------------------------------------
+	
+	/**
+	 * 회원정보 수정
+	 * @param dto 수정할 회원정보
+	 */
+	public void update(MemberDTO dto) {
+		MemberEntity entity = mr.findById(dto.getMemberId())
+				.orElseThrow(() -> new EntityNotFoundException(dto.getMemberId()+": 회원이 없습니다"));
+		if (!dto.getMemberPassword().isEmpty()) {
+			entity.setMemberPassword(passwordEncoder.encode(dto.getMemberPassword()));
+		}
+		entity.setMemberName(dto.getMemberName());
+		entity.setEmail(dto.getEmail());
+		entity.setPhone(dto.getPhone());
+		entity.setAddress(dto.getAddress());
+		
+		mr.save(entity);
+	}
+	
+	/**
+	 * 회원정보 조회
+	 * @param id 조회할 아이디
+	 * @return	 회원 한 명의 정보
+	 */
+	public MemberDTO getMember(String id) {
+		MemberEntity entity = mr.findById(id).orElseThrow(() -> new EntityNotFoundException(id+": 아이디가 없습니다."));
+		MemberDTO dto = MemberDTO.builder()
+				.memberId(entity.getMemberId())
+				.memberName(entity.getMemberName())
+				.email(entity.getEmail())
+				.phone(entity.getPhone())
+				.address(entity.getAddress())
+				.enabled(entity.getEnabled())
+				.rolename(entity.getRolename())
+				.build();
+		
+		
+		return dto;
 	}
 }

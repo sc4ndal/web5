@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>updateForm.html</title>
+	<link rel="stylesheet" th:href="@{/css/main.css}" type="text/css">
+	<script th:src="@{https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js}"></script>
+	<script>
+		window.onload = function () {
+			const postBtn = document.querySelector('#postBtn');
+			postBtn.addEventListener('click', function () {
+				const width = 500;      // 팝업창 가로 크기
+				const height = 600;     // 팝업창 세로 크기
+				
+				const left = window.screenX + (window.screen.width / 2) - (width / 2);
+				const top = window.screenY + (window.screen.height / 2) - (height / 2);
+				
+				new daum.Postcode({
+					oncomplete: function (data) {
+						let addr = '';
+						if (data.userSelectdType === 'R') {
+							addr = data.roadAddress;    // 도로명주소
+						} else {
+							addr = data.jibunAddress;   // 지번주소
+						}
+						document.querySelector('#address').value = addr;
+					}
+				}).open({
+					left: left,
+					top: top,
+					popupTitle: '우편번호 검색'   // 팝업창 이름
+				})
+			});
+			
+			document.querySelector('#updateForm').addEventListener('submit', function (e) {
+				let pw1 = document.querySelector('#memberPassword').value;
+				let pw2 = document.querySelector('#memberPassword2').value;
+				let name = document.querySelector('#memberName').value;
+				
+				if (pw1 !== '') {
+					if (pw1.length < 3 || pw1.length > 10) {
+						alert("비밀번호는 3~10자 사이로 입력하세요.");
+						e.preventDefault();
+						return;
+					}
+					if (pw1 !== pw2) {
+						alert("비밀번호가 일치하지 않습니다.");
+						e.preventDefault();
+						return;
+					}
+				}
+				
+				if (name.trim() === "") {
+					alert("이름을 입력해주세요.");
+					e.preventDefault();
+					return;
+				}
+				
+			});
+		}
+	</script>
+</head>
+<body>
+<header>
+	<h1>[ 개인정보 수정 ]</h1>
+</header>
+<section>
+	<div id="msgBox" style="color:red;"></div>
+	<form id="infoForm" method="post" th:action="@{/member/info}">
+		<table>
+			<tr>
+				<th>ID</th>
+				<td><input id="updateId" name="updateId" readonly th:value="${member.memberId}" type="text"></td>
+			</tr>
+			<tr>
+				<th>비밀번호</th>
+				<td><input id="memberPassword" name="memberPassword" placeholder="비밀번호를 변경하려면 입력하세요." type="text"></td>
+			</tr>
+			<tr>
+				<th>비밀번호 확인</th>
+				<td><input id="memberPassword2" name="memberPassword2" placeholder="비밀번호 다시 입력" type="text"></td>
+			</tr>
+			<tr>
+				<th>이름</th>
+				<td><input id="memberName" name="memberName" th:value="${member.memberName}" type="text"></td>
+			</tr>
+			<tr>
+				<th>이메일</th>
+				<td><input id="email" name="email" placeholder="이메일 입력" th:value="${member.email}" type="email"></td>
+			</tr>
+			<tr>
+				<th>전화번호</th>
+				<td><input id="phone" name="phone" placeholder="전화번호 입력" th:value="${member.phone}" type="text"></td>
+			</tr>
+			<tr>
+				<th>주소</th>
+				<td>
+					<input id="address" name="address" placeholder="주소 입력" readonly style="width: 300px;"
+					       th:value="${member.address}" type="text">
+					<input id="postBtn" type="button" value="주소 검색">
+				</td>
+			</tr>
+			<tr>
+				<td class="center white" colspan="2">
+					<button type="submit">수정하기</button>
+					<button type="reset">초기화</button>
+				</td>
+			</tr>
+		</table>
+	</form>
+</section>
+</body>
+</html>
