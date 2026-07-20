@@ -15,6 +15,7 @@ import net.datasa.web5.domain.entity.MemberEntity;
 import net.datasa.web5.exception.PasswordException;
 import net.datasa.web5.repository.MemberRespository;
 import net.datasa.web5.security.AuthenticatedUserDetailsService;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -23,6 +24,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -127,7 +131,7 @@ public class MemberService {
 		Authentication info = SecurityContextHolder.getContext().getAuthentication();
 		log.debug(">>> 직접 만든 인증객체 정보 : {}", info);
 	}
-	
+
 //	public MemberDTO info(UserDetails user) {
 //		MemberEntity entity = mr.findById(user.getUsername()).orElseThrow(() -> new EntityNotFoundException("회원 없음"));
 //		MemberDTO dto = MemberDTO.builder()
@@ -143,11 +147,12 @@ public class MemberService {
 	
 	/**
 	 * 회원정보 수정
+	 *
 	 * @param dto 수정할 회원정보
 	 */
 	public void update(MemberDTO dto) {
 		MemberEntity entity = mr.findById(dto.getMemberId())
-				.orElseThrow(() -> new EntityNotFoundException(dto.getMemberId()+": 회원이 없습니다"));
+				.orElseThrow(() -> new EntityNotFoundException(dto.getMemberId() + ": 회원이 없습니다"));
 		if (!dto.getMemberPassword().isEmpty()) {
 			entity.setMemberPassword(passwordEncoder.encode(dto.getMemberPassword()));
 		}
@@ -161,11 +166,12 @@ public class MemberService {
 	
 	/**
 	 * 회원정보 조회
+	 *
 	 * @param id 조회할 아이디
-	 * @return	 회원 한 명의 정보
+	 * @return     회원 한 명의 정보
 	 */
 	public MemberDTO getMember(String id) {
-		MemberEntity entity = mr.findById(id).orElseThrow(() -> new EntityNotFoundException(id+": 아이디가 없습니다."));
+		MemberEntity entity = mr.findById(id).orElseThrow(() -> new EntityNotFoundException(id + ": 아이디가 없습니다."));
 		MemberDTO dto = MemberDTO.builder()
 				.memberId(entity.getMemberId())
 				.memberName(entity.getMemberName())
@@ -178,5 +184,81 @@ public class MemberService {
 		
 		
 		return dto;
+	}
+	
+	// [ 관리자 ]
+	//-----------------------------------------------------------------
+	// 저장 테스트
+	public void admin() {
+		MemberEntity entity = MemberEntity.builder()
+				.memberId("admin")
+				.memberPassword(passwordEncoder.encode("1111"))
+				.memberName("admin")
+				.email("admin@admin.com")
+				.phone("010-1234-5678")
+				.address("none")
+				.enabled(true)
+				.rolename("ROLE_ADMIN")
+				.build();
+		
+		mr.save(entity);
+	}
+	
+	public List<MemberDTO> list() {
+		List<MemberDTO> dtoList = new ArrayList<>();
+		Sort sort = Sort.by(
+				Sort.Order.asc("rolename"),
+				Sort.Order.desc("memberName")
+		);
+		// ⬆️둘 다⬇️ 권한 오름차순, 이름 내림차순
+		Sort sort1 = Sort.by(Sort.Direction.ASC, "rolename").and(Sort.by(Sort.Direction.DESC, "memberName"));
+		for (MemberEntity entity : mr.findAll(sort1)) {
+			MemberDTO dto = MemberDTO.builder()
+					.memberId(entity.getMemberId())
+					.memberName(entity.getMemberName())
+					.email(entity.getEmail())
+					.phone(entity.getPhone())
+					.address(entity.getAddress())
+					.rolename(entity.getRolename())
+					.enabled(entity.getEnabled())
+					.build();
+			dtoList.add(dto);
+		}
+		return dtoList;
+	}
+	
+	/**
+	 * 회원 검색 결과 조회
+	 *
+	 * @param keyword
+	 * @return
+	 */
+	public List<MemberDTO> selectById(String keyword) {
+		List<MemberEntity> resultEntityList = mr.findByMemberIdContaining(keyword);
+		List<MemberDTO> resultDtoList = new ArrayList<>();
+		for (MemberEntity entity : resultEntityList) {
+			MemberDTO dto = MemberDTO.builder()
+					.memberId(entity.getMemberId())
+					.memberName(entity.getMemberName())
+					.email(entity.getEmail())
+					.phone(entity.getPhone())
+					.address(entity.getAddress())
+					.rolename(entity.getRolename())
+					.enabled(entity.getEnabled())
+					.build();
+			resultDtoList.add(dto);
+		}
+		
+		return resultDtoList;
+	}
+	
+	public void role(String id) {
+		MemberEntity entity = mr.findById(id).orElseThrow(() -> new EntityNotFoundException(id + "회원정보 없음"));
+		if (entity.getRolename().equals("ROLE_ADMIN")) {
+			entity.setRolename("ROLE_USER");
+		} else {
+			entity.setRolename("ROLE_ADMIN");
+		}
+		mr.save(entity);
 	}
 }

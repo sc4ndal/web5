@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8">
+	<title>memberList</title>
+	<link rel="stylesheet" th:href="@{/css/main.css}" type="text/css">
+	<script>
+		window.onload = function() {
+			document.querySelectorAll('.roleBtn').forEach(btn => {
+				btn.addEventListener('click', function (e) {
+				const id = this.dataset.id;
+					if (confirm("변경하시겠습니까?")) {
+						alert("변경완료");
+						location.href = `/admin/role/${id}`;  // 마지막에 이동
+					}
+				})
+			});
+		}
+	</script>
+</head>
+<body>
+	<header>
+		<h1><a th:href="@{/}" style="text-decoration: none;">[ 회원 목록 ]</a></h1>
+	</header>
+	<section>
+		<table>
+			<caption th:text="|${#authentication.name}님 로그인 중|" style="text-align: left"></caption>
+			
+<!--			회원 검색 -->
+			<form th:action="@{/admin/list}" method="get">
+				<input type="text" name="keyword" id="keyword" placeholder="ID 포함 검색" th:value="${keyword}">
+				<input type="submit" value="검색">
+			</form>
+			<thead>
+			<tr>
+				<th>ID</th>
+				<th>NAME</th>
+				<th>EMAIL</th>
+				<th style="width: 150px;">PHONE</th>
+				<th>ADDRESS</th>
+				<th>ROLENAME</th>
+				<th>ENABLED</th>
+				<th>변경</th>
+			</tr>
+			<tr th:each="member : ${memberList}"
+				th:if="${member.memberId} != ${#authentication.name}">
+<!--				관리자는 빼고 출력 함 -->
+				<td th:text="${member.memberId}">ID</td>
+				<td th:text="${member.memberName}">NAME</td>
+				<td th:text="${member.email}">EMAIL</td>
+				<td th:text="${member.phone}">PHONE</td>
+				<td th:text="${member.address}">ADDRESS</td>
+				<td th:text="${member.rolename}">ROLENAME</td>
+				<td th:text="${member.enabled}">ENABLED</td>
+				<td>
+					<input type="button" value="권한변경" class="roleBtn" th:data-id="${member.memberId}">
+				</td>
+			</tr>
+			</thead>
+		</table>
+	</section>
+</body>
+</html>
