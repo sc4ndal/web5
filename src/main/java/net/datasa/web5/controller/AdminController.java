@@ -78,6 +78,7 @@ public class AdminController {
 	) {
 		log.debug("가져온 값  : {}", id);
 		ms.role(id);
+		
 		log.debug("권한 변경완료");
 		return "redirect:/admin/list";
 	}
