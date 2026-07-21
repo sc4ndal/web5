@@ -252,6 +252,7 @@ public class MemberService {
 		return resultDtoList;
 	}
 	
+	
 	public void role(String id) {
 		MemberEntity entity = mr.findById(id).orElseThrow(() -> new EntityNotFoundException(id + "회원정보 없음"));
 		if (entity.getRolename().equals("ROLE_ADMIN")) {
@@ -260,5 +261,12 @@ public class MemberService {
 			entity.setRolename("ROLE_ADMIN");
 		}
 		mr.save(entity);
+	}
+	
+	public void updateEnabled(String id, boolean enabled) {
+		MemberEntity entity = mr.findById(id).orElseThrow(() -> new EntityNotFoundException(id + "회원정보 없음"));
+		
+		entity.setEnabled(!enabled);
+//		mr.save(entity);
 	}
 }

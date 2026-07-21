@@ -36,7 +36,7 @@ public class WebSecurityConfig {
 			, "/member/idCheck"            // ID중복확인
 			, "/member/info"                // 개인정보 수정
 			, "/admin/create-admin"            // 관리자 계정 생성
-            , "/admin/page"        			// 관리자 페이지(권한 비교)
+//            , "/admin/page"        			// 관리자 페이지(권한 비교)
 			, "/board/listAll"            // 게시판 전체 목록 보기
 			, "/board/list"                // 게시판 목록 보기
 			, "/board/read"                // 게시판 글 읽기

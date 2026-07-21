@@ -71,6 +71,11 @@ public class AdminController {
 		return "/adminView/memberList";
 	}
 	
+	/**
+	 * 권한 변경
+	 * @param id
+	 * @return /admin/list
+	 */
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/role/{id}")
 	public String role(
@@ -80,6 +85,25 @@ public class AdminController {
 		ms.role(id);
 		
 		log.debug("권한 변경완료");
+		return "redirect:/admin/list";
+	}
+	
+	/**
+	 * 계정상태 변경
+	 * @param id
+	 * @param enabled
+	 * @return /admin/list
+	 */
+	@PreAuthorize("hasRole('ADMIN')")
+	@GetMapping("/updateEnabled/{id}/{enabled}")
+	public String updateEnabled(
+			@PathVariable("id") String id,
+			@PathVariable("enabled")  boolean enabled
+	) {
+		log.debug("받아온 id:{},enabled:{}", id, enabled);
+		
+		ms.updateEnabled(id, enabled);
+		log.debug("변경완료");
 		return "redirect:/admin/list";
 	}
 }

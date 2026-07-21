@@ -6,17 +6,55 @@
 	<title>memberList</title>
 	<link rel="stylesheet" th:href="@{/css/main.css}" type="text/css">
 	<script>
-		window.onload = function() {
+		window.onload = function () {
 			document.querySelectorAll('.roleBtn').forEach(btn => {
 				btn.addEventListener('click', function (e) {
-				const id = this.dataset.id;
+					const id = this.dataset.id;
 					if (confirm("변경하시겠습니까?")) {
 						alert("변경완료");
 						location.href = `/admin/role/${id}`;  // 마지막에 이동
 					}
 				})
 			});
-		}
+			
+			// document.querySelectorAll('.enabledBtn').forEach(btn => {
+			// 	btn.addEventListener('click', function (e) {
+			// 		const id = this.dataset.id;
+			// 		const enabled = this.dataset.enabled;
+			//
+			// 		if (confirm("변경하시겠습니까?")) {
+			// 			alert("변경완료");
+			// 			location.href = `/admin/updateEnabled/${id}/${enabled}`;
+			// 		}
+			// 	});
+			// });
+			
+			// 활성화/비활성화 변경
+			// 이벤트 위임 방식
+			document.querySelector('tbody').addEventListener('click', function (e) {
+				// 내가 클릭한 지점부터 시작해서 부모요소들을 향해 위로 올라감
+				const btn = e.target.closest('.enabledBtn');
+				
+				console.log('btn: ', btn);
+				console.log('e.currentTarget: ', e.currentTarget);
+				console.log('this: ', this);
+				
+				// '.enabledBtn' 을 클릭한게 아니면 무시
+				if (!btn) {
+					console.log('활성화 버튼 아님');
+					return;
+				}
+				// dataset에서 값 가져오기
+				let id = btn.dataset.id;
+				let enabled = btn.dataset.enabled;
+				let result = enabled === 'true' ? "비활성화" : "활성화";
+				if (confirm(`정말 ${result} 하시겠습니까?`)) {
+					alert(`${result}완료`);
+					location.href = `/admin/updateEnabled/${id}/${enabled}`;
+				}
+			});
+		};
+		
 	</script>
 </head>
 <body>
@@ -43,6 +81,8 @@
 				<th>ENABLED</th>
 				<th>변경</th>
 			</tr>
+			</thead>
+			<tbody>
 			<tr th:each="member : ${memberList}"
 				th:if="${member.memberId} != ${#authentication.name}">
 <!--				관리자는 빼고 출력 함 -->
@@ -55,9 +95,11 @@
 				<td th:text="${member.enabled}">ENABLED</td>
 				<td>
 					<input type="button" value="권한변경" class="roleBtn" th:data-id="${member.memberId}">
+					<input type="button" th:value="${member.enabled} ? '비활성화' : '활성화'" class="enabledBtn"
+					th:data-id="${member.memberId}" th:data-enabled="${member.enabled}">
 				</td>
 			</tr>
-			</thead>
+			</tbody>
 		</table>
 	</section>
 </body>
