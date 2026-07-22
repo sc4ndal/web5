@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8">
+	<title>writeForm.html</title>
+	<link rel="stylesheet" th:href="@{/css/main.css}" type="text/css">
+	<script>
+		window.onload = function () {
+			const writeFrom = document.querySelector("#writeForm");
+			const title = document.querySelector("#title");
+			const contents = document.querySelector("#contents");
+			
+			writeFrom.addEventListener("submit", e => {
+				if (title.value.length < 5) {
+					alert("제목을 5자 이상 입력하세요.");
+					title.focus();
+					title.select();
+					e.preventDefault();
+					return;
+				}
+				if (contents.value.length < 5) {
+					alert("내용을 5자 이상 입력하세요.");
+					contents.focus();
+					contents.select();
+					e.preventDefault();
+					return;
+				}
+				
+			});
+		};
+	</script>
+</head>
+<body>
+	<header>
+		<h1>[ 글쓰기 ]</h1>
+	</header>
+	<section>
+<!--
+		[ MultipartFile ]
+		- 파일 업로드를 자바 객체로 감싸서 다루게 해주는 인터페이스
+		- enctype = "multipart/form-data" :
+			여러 종류의 데이터(일반 데이터(text) + 파일(binary))를
+			하나의 HTTP 요청에 함께 전송할 수 있도록 설계된 특수한 인코딩 방식
+-->
+		<form th:action="@{/board/write}" id="writeForm" method="post"
+		enctype="multipart/form-data">      <!-- 이거 없으면 첨부파일 안 넘어감-->
+			<table>
+				<tr>
+					<th>제목</th>
+					<td><input type="text" name="title" id="title" style="width:400px;"></td>
+				</tr>
+				<tr>
+					<th>내용</th>
+					<td><textarea name="contents" id="contents"></textarea></td>
+				</tr>
+				<tr>
+					<th>파일첨부</th>
+					<td><input type="file" name="upload" id="upload"></td>
+				</tr>
+				<tr>
+					<td colspan="2" class="white center">
+						<button type="submit">저장</button>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</section>
+</body>
+</html>

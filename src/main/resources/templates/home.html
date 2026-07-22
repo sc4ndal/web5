@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
 	<meta charset="UTF-8">
 	<title>home.html</title>
@@ -11,26 +11,29 @@
 	<p sec:authorize="isAuthenticated()">
 		<span th:text="|${#authentication.name} 님 로그인중|"></span>
 	</p>
-<ul>
-<!--	로그인 안 했을 때 -->
-	<th:block sec:authorize="not isAuthenticated()">
-	<li><a th:href="@{/member/join}">회원가입</a></li>
-	<li><a th:href="@{/member/loginForm}">로그인</a></li>
-	</th:block>
-<!--	로그인 했을때 -->
-	<th:block sec:authorize="isAuthenticated()">
-	<li><a th:href="@{/member/logout}">로그아웃</a></li>
-	<li><a th:href="@{/member/info}">개인정보 수정</a></li>
-	</th:block>
+	<ul>
+		<!--	로그인 안 했을 때 -->
+		<th:block sec:authorize="not isAuthenticated()">
+			<li><a th:href="@{/member/join}">회원가입</a></li>
+			<li><a th:href="@{/member/loginForm}">로그인</a></li>
+		</th:block>
+		<!--	로그인 했을때 -->
+		<th:block sec:authorize="isAuthenticated()">
+			<li><a th:href="@{/member/logout}">로그아웃</a></li>
+			<li><a th:href="@{/member/info}">개인정보 수정</a></li>
+			<li><a th:href="@{board/write}">글쓰기</a></li>
+		</th:block>
+		
+		<li><a th:href="@{/security}">시큐리티 타임리프 문법</a></li>
+		<li><a th:href="@{/admin/create-admin}">Admin 계정 생성</a></li>
+		<li><a th:href="@{/admin/page}">관리자 페이지</a></li>
+		
+		<th:block sec:authorize="hasRole('ADMIN')">
+			<li><a th:href="@{admin/list}">회원 목록</a></li>
+		</th:block>
+		
+		<li><a th:href="@{/file}">File 클래스</a></li>
 	
-	<li><a th:href="@{/security}">시큐리티 타임리프 문법</a></li>
-	<li><a th:href="@{/admin/create-admin}">Admin 계정 생성</a></li>
-	<li><a th:href="@{/admin/page}">관리자 페이지</a></li>
-	
-	<th:block sec:authorize="hasRole('ADMIN')">
-		<li><a th:href="@{admin/list}">회원 목록</a></li>
-	</th:block>
-	
-</ul>
+	</ul>
 </body>
 </html>

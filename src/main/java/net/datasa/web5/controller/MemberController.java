@@ -126,7 +126,7 @@ public class MemberController {
 			Model model) {
 		
 		// 1. 수동 로그인
-//		ms.inactive(memberId, memberPassword);
+		ms.inactive(memberId, memberPassword);
 //		log.debug("휴면 해제 성공");
 //		model.addAttribute("memberId", memberId);
 //		model.addAttribute("msg", "휴면 계정이 해제되었습니다. 다시 로그인해주세요.");

@@ -41,4 +41,12 @@ public class GlobalExceptionHandler {
 		model.addAttribute("message", e.getMessage());
 		return "errorView/custom-error-page";
 	}
+	
+	// 4. 파일 입출력 및 시스템 오류
+	@ExceptionHandler(FileStorageException.class)
+	public String handleFileStorage(FileStorageException e, Model model) {
+		log.debug("> [GlobalException] FileStorageException : {}", e.getMessage());
+		model.addAttribute("message", e.getMessage());
+		return "errorView/custom-error-page";
+	}
 }
