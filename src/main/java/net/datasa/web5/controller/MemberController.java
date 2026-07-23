@@ -3,6 +3,7 @@ package net.datasa.web5.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.datasa.web5.domain.dto.BoardDTO;
 import net.datasa.web5.domain.dto.MemberDTO;
 import net.datasa.web5.security.AuthenticatedUser;
 import net.datasa.web5.service.MemberService;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /*
 	회원 Controller
@@ -29,7 +32,6 @@ public class MemberController {
 	// 회원 관련 Service
 	private final MemberService ms;
 	
-
 	
 	//------------------------------------------------------------------
 	
@@ -113,6 +115,7 @@ public class MemberController {
 	
 	/**
 	 * 휴면 계정 해제
+	 *
 	 * @param memberId
 	 * @param memberPassword
 	 * @param model
@@ -140,7 +143,7 @@ public class MemberController {
 		
 		return "redirect:/";
 	}
-	
+
 //	@GetMapping("/info")
 //	public String info(
 //			@AuthenticationPrincipal UserDetails user,
@@ -157,11 +160,12 @@ public class MemberController {
 	
 	/**
 	 * 개인정보 수정 페이지로 이동
-	 * @param user		로그인한 사용자 정보(Security Context - Authentication)
+	 *
+	 * @param user  로그인한 사용자 정보(Security Context - Authentication)
 	 * @param model
-	 * @return	infoForm.html
-	  	@PreAuthorize		메서드 실행 "전"에 권한 검사
-	 	@PostAuthorize		메서드 실행 "후"에 결과를 보고 권한 검사
+	 * @return infoForm.html
+	 * @PreAuthorize 메서드 실행 "전"에 권한 검사
+	 * @PostAuthorize 메서드 실행 "후"에 결과를 보고 권한 검사
 	 */
 	@PreAuthorize("isAuthenticated()")    // 로그인한 사용자만 접근 허용
 	@GetMapping("/info")
@@ -181,16 +185,17 @@ public class MemberController {
 	
 	/**
 	 * 개인정보 수정 처리
-	 * @param user		로그인한 사용자 정보
-	 * @param dto		수정할 정보
-	 * @return	/
+	 *
+	 * @param user 로그인한 사용자 정보
+	 * @param dto  수정할 정보
+	 * @return /
 	 */
-	@PreAuthorize("isAuthenticated()")		// 로그인한 사용자만 접근가능
+	@PreAuthorize("isAuthenticated()")        // 로그인한 사용자만 접근가능
 	@PostMapping("/info")
 	public String info(
 			@AuthenticationPrincipal AuthenticatedUser user,
 			MemberDTO dto
-			) {
+	) {
 		
 		log.debug("수정할 정보:{}", dto);
 		dto.setMemberId(user.getUsername());
@@ -199,4 +204,5 @@ public class MemberController {
 		
 		return "redirect:/";
 	}
+	
 }
