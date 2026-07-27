@@ -2,11 +2,17 @@ package net.datasa.web5.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AccessDeniedException;
 
 @Slf4j
@@ -48,5 +54,27 @@ public class GlobalExceptionHandler {
 		log.debug("> [GlobalException] FileStorageException : {}", e.getMessage());
 		model.addAttribute("message", e.getMessage());
 		return "errorView/custom-error-page";
+	}
+	
+	// 5. ResponseStatusException 처리
+	@ExceptionHandler
+	public ResponseEntity<String> handleResponseStatus(ResponseStatusException e) {
+		log.debug("> [GlobalException] ResponseStatusException 발생: {}", e.getReason());
+		
+		String alertScript = String.format("""
+				<script>
+					alert('%s');
+					history.back();
+				</script>
+				""", e.getReason());
+		
+		// 브라우저가 이 응답을 HTML/JS로 인식하도록 Header 설정
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(
+				new MediaType("text", "html", StandardCharsets.UTF_8)
+		);
+		
+		// 오류는 발생했지만 200 OK 상태로 JS 전달 (페이지 전환없이 JS 실행)
+		return new ResponseEntity<>(alertScript, headers, HttpStatus.OK);
 	}
 }

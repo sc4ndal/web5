@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import net.datasa.web5.domain.dto.BoardDTO;
 import net.datasa.web5.service.BoardService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/board")
 public class BoardController {
-
+	
 	private final BoardService bs;
 	
 	// applaction.properties 파일의 게시판 관련 설정값
@@ -39,6 +41,7 @@ public class BoardController {
 	
 	/**
 	 * 글쓰기 페이지로 이동
+	 *
 	 * @return writeForm.html
 	 */
 	@GetMapping("/write")
@@ -48,28 +51,29 @@ public class BoardController {
 	
 	/**
 	 * 게시글 저장 처리
-	 * @param boardDTO	작성한 글 정보(제목,내용)
-	 * @param user		로그인한 사용자 정보
-	 * @param upload	첨부파일
-	 * @return			/board/list
+	 *
+	 * @param boardDTO 작성한 글 정보(제목,내용)
+	 * @param user     로그인한 사용자 정보
+	 * @param upload   첨부파일
+	 * @return /board/list
 	 */
-	@PreAuthorize("isAuthenticated()")			// 로그인한 사용자만 가능
+	@PreAuthorize("isAuthenticated()")            // 로그인한 사용자만 가능
 	@PostMapping("/write")
 	public String write(
 			@ModelAttribute BoardDTO boardDTO,
-			@AuthenticationPrincipal UserDetails user,		// 인증객체로부터 가져온 유저 값
+			@AuthenticationPrincipal UserDetails user,        // 인증객체로부터 가져온 유저 값
 			@RequestParam(value = "upload", required = false) MultipartFile upload
-			) {
+	) {
 		
 		boardDTO.setMemberId(user.getUsername());
 		log.debug("저장할 글 정보:{}", boardDTO);
 		
 		if (upload != null) {
-			log.debug("Empty: {}", 		 upload.isEmpty());
+			log.debug("Empty: {}", upload.isEmpty());
 			log.debug("파라미터 이름: {}", upload.getName());
-			log.debug("파일명: {}", 		 upload.getOriginalFilename());
-			log.debug("파일크기: {}", 	 upload.getSize());
-			log.debug("파일종류: {}", 	 upload.getContentType());
+			log.debug("파일명: {}", upload.getOriginalFilename());
+			log.debug("파일크기: {}", upload.getSize());
+			log.debug("파일종류: {}", upload.getContentType());
 			
 			bs.write(boardDTO, uploadPath, upload);
 		}
@@ -81,6 +85,7 @@ public class BoardController {
 	
 	/**
 	 * 게시판 글 목록 조회
+	 *
 	 * @param model
 	 * @return listAll.html
 	 */
@@ -94,11 +99,12 @@ public class BoardController {
 	
 	/**
 	 * 게시판 목록을 조회하고 페이징 및 검색 기능을 제공
+	 *
 	 * @param model
-	 * @param page		현재 페이지 (default: 0)
-	 * @param searchType	검색 대상 (default: "")
-	 * @param searchWord	검색어 (default: "")
-	 * @return
+	 * @param page       현재 페이지 (default: 0)
+	 * @param searchType 검색 대상 (default: "")
+	 * @param searchWord 검색어 (default: "")
+	 * @return list.html
 	 */
 	@GetMapping("/list")
 	public String list(
@@ -140,5 +146,79 @@ public class BoardController {
 		log.debug("다음 페이지 존재: {}", boardPage.hasNext());
 		
 		return "boardView/list";
+	}
+	
+	//-------------------------------------------------------------------------
+	
+	/**
+	 * 글 조회
+	 *
+	 * @param model
+	 * @param boardNum 글 번호
+	 * @return read.html
+	 */
+	@GetMapping("/read")
+	public String read(Model model, @RequestParam("boardNum") int boardNum) {
+		
+		log.debug("조회할 글번호 : {}", boardNum);
+		BoardDTO dto = bs.getBoard(boardNum);
+		log.debug("받아온 값 : {}", boardNum);
+		model.addAttribute("board", dto);
+		
+		return "boardView/read";
+	}
+	
+	//-------------------------------------------------------------------------
+	
+	/**
+	 * 첨부 파일 다운로드
+	 *
+	 * @param boardNum
+	 * @return ResponseEntity
+	 * - HttpServletResponse 에서 일일이 해야하는 것들을
+	 * Spring이 객체화해서 제공하는 응답 객체
+	 * - HTTP 응답 요소
+	 * 1. Status (상태 코드) : 200 OK, 404 NOT FOUND, 500 ERROR 등
+	 * 2. Header (헤더 정보) : 파일명, 파일 타입, 파일 크기, 쿠키 등 메타 데이터
+	 * 3. Body (본문 데이터) : 진짜 전달할 내용물 (HTML, JSON, 파일 등...)
+	 */
+	@GetMapping("/download")
+	public ResponseEntity<Resource> download(@RequestParam("boardNum") int boardNum) {
+		log.debug("[BoardController] 다운로드 요청 - 글 번호 : {}", boardNum);
+		
+		return bs.download(boardNum, uploadPath);
+	}
+	//-------------------------------------------------------------------------
+	
+	/**
+	 * 이미지 미리보기
+	 *
+	 * @param boardNum
+	 * @return HTTP 응답 바디에 파일/스트림 전송
+	 */
+	@GetMapping("/preview")
+	public ResponseEntity<Resource> preview(@RequestParam("boardNum") int boardNum) {
+		log.debug("[BoardController] 미리보기 요청 - 글 번호: {}", boardNum);
+		
+		return bs.preview(boardNum, uploadPath);
+	}
+	
+	//-------------------------------------------------------------------------
+	
+	/**
+	 * 게시글 추천
+	 * @param boardNum 게시글 번호
+	 * @param user	   인증 정보
+	 * @return		   /board/read
+	 */
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/like" + "/{boardNum}")
+	public String like(
+			@PathVariable("boardNum") int boardNum,
+			@AuthenticationPrincipal UserDetails user
+	) {
+		bs.like(boardNum, user.getUsername());
+		log.debug("추천수 증가!");
+		return "redirect:/board/read?boardNum=" + boardNum;
 	}
 }
