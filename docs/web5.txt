@@ -1,17 +1,16 @@
-
 [ web5 ]
 
 1. 프로젝트 개요
     목적:  Spring Boot와 Spring Data JPA 기반의 회원제 게시판(Board) 서비스를 직접 구축하며 MVC 패턴의 핵심 CRUD를 복습.
-        더불어 실무 필수 요소인 파일 입출력(I/O), Spring Security 인증/인가 처리,
+        파일 입출력(I/O), Spring Security 인증/인가 처리,
         JPA 연관 관계 및 고도화된 페이징/검색 기능을 체계적으로 마스터하는 것을 목표로 한다.
 
     개발 환경 및 구조:
-        Backend: Java 21, Spring Boot 4.x (Spring Framework 7.x 기반), Spring Data JPA, Spring Security 6.x
-        Database: PostgreSQL (자동 증가 Identity 전략, 가비지 데이터 방지를 위한 Cascading 및 외래키 제약조건 설정)
+        Backend: Java 21, Spring Boot 3.x (Spring Framework 6.x 기반), Spring Data JPA, Spring Security 6.x
+        Database: MySQL (자동 증가 Identity 전략, 가비지 데이터 방지를 위한 Cascading 및 외래키 제약조건 설정)
         Frontend: Thymeleaf HTML5, CSS3, JavaScript
         패키지 구조: net.datasa.web5 표준 레이어드 아키텍처 기반
-            controller / service / repository / domain (dto, entity) / security / util
+            controller / service / repository / domain (dto, entity) / exception / security / util
 
 
 2. 주요 실습 내용
@@ -54,7 +53,7 @@
             로그인 제출 시 AuthenticatedUserDetailsService가 구동되어 DB에서 해당 아이디를 조회하고,
             AuthenticatedUser 객체(UserDetails 구현체)에 회원 정보 및 권한 리스트를 담아 시큐리티 컨텍스트에 저장.
         인가 판별 (View -> Config -> Controller 3단계 철통 보안):
-            1단계 (View): Thymeleaf 시큐리티 문법을 통해 로그인 전에는 [로그인], 로그인 후에는 [로그아웃/마이페이지]가 보이게 하며,
+            1단계 (View): Thymeleaf 시큐리티 문법을 통해 로그인 전에는 [로그인], 로그인 후에는 [로그아웃/개인정보수정]가 보이게 하며,
                 관리자(ROLE_ADMIN)에게만 [관리자 페이지] 버튼이 렌더링되도록 동적 UI를 제어.
             2단계 (Config): WebSecurityConfig 내 requestMatchers() 설정을 통해 특정 주소 패턴의 물리적 접근 권한을 제한.
             3단계 (Controller): @EnableMethodSecurity를 켜고,
@@ -98,6 +97,121 @@
         복잡한 조건 검색이나 다중 조인을 처리하기 위해 엔티티 객체 중심의
         SQL인 JPQL(Java Persistence Query Language)을 학습.
 
+    [ JPA 메서드 vs JPQL vs QueryDSL ]
+        1. JPA 메서드 네이밍
+            메서드 이름만으로 쿼리를 자동 생성하는 기능
+              - 매우 간단하고 빠르게 구현 가능
+              - 복잡한 조건은 네이밍이 길고 복잡해짐
+              - 리턴 타입을 유연하게 지정 가능 (Entity, Optional 등)
+        2. JPQL(Java Persistence Query Language)
+            SQL과 비슷하지만 테이블이 아닌 엔티티 객체를 대상으로 작성하는 JPA의 객체지향 쿼리 언어
+              - 동적 쿼리는 직접 문자열 조립 or @Query 사용
+              - SQL과 비슷해서 배우기 쉬움
+              - 복잡한 쿼리 작성 가능
+              - 문자열 기반이라 컴파일 타임에 오류 체크 불가 (런타임 오류 위험)
+              - 가독성이 떨어질 수 있음
+        3. QueryDSL
+            자바 코드로 타입 안정성(type-safe)을 보장하는 동적 쿼리 빌더
+              - 코드 작성량이 많을 수 있지만 유지보수가 편함
+              - IDE 자동완성 지원이 매우 뛰어남 (컴파일 타임 체크)
+              - 복잡한 동적 조건과 조인, 서브쿼리 작성에 강력함
+              - 추가 라이브러리 의존성 필요 (gradle/maven 설정)
+
+    💡 비동기란?
+    ==========================================================================================
+    -> 코드가 위에서 아래로 순차적으로 실행되는 도중, 시간이 오래 걸리는 작업(API 요청, 타이머 등)이 있으면
+       그 작업이 끝날 때까지 멈춰서 기다리지 않고, "다음 코드를 먼저 실행"하는 방식.
+       작업이 완료되면 나중에 결과를 돌려받아 처리. (싱글 스레드인 브라우저가 버벅이지 않게 하는 핵심 기술)
+    * ----------------------------------------------------------------------------------------
+    1. PROMISE (약속) : "지금은 없지만, 나중에 결과(데이터)를 꼭 줄게"라는 약속 객체
+    ------------------------------------------------------------------------------------------
+    - 비동기 작업의 '상태'와 '결과물'을 깨끗하게 관리하기 위해 등장한 표준 객체.
+    - 과거의 콜백 지옥(Callback Hell: 함수 안에 함수가 꼬리를 무는 현상)을 해결해 줌.
+    * Promise의 3가지 상태(State):
+        1) Pending (대기)  : 약속을 하고 아직 결과를 기다리는 중 (초기 상태)
+        2) Fulfilled (이행): 비동기 작업이 성공적으로 완료됨 -> resolve() 함수가 호출된 상태
+        3) Rejected (거부) : 작업 중 에러가 발생함 -> reject() 함수가 호출된 상태
+    * 기본 사용법:
+        const myPromise = new Promise((resolve, reject) => {
+           let success = true;
+           if (success) resolve("성공 데이터");          // then()으로 전달됨
+           else         reject("에러 메시지");           // catch()로 전달됨
+        });
+        myPromise
+            .then(result => { console.log(result); })    // 성공 시 실행
+            .catch(error => { console.error(error); });  // 실패 시 실행
+    ------------------------------------------------------------------------------------------
+    2. FETCH (가져오기) : 브라우저 내장 네트워크 요청 API (Promise 기반)
+    ------------------------------------------------------------------------------------------
+    - 서버(백엔드 Controller)와 HTTP 통신을 주고받아 데이터를 가져오거나 보낼 때 사용.
+    - 기본적으로 'Promise'를 반환하므로, 뒤에 .then()을 붙여서 결과를 처리.
+    - 매개변수:
+       url: 요청을 보낼 URL.
+       options: 요청에 대한 옵션을 포함하는 객체.
+       method: HTTP 메서드 (GET, POST 등).
+       headers: HTTP 헤더를 설정.
+       body: 요청의 본문을 설정 (주로 POST 요청에서 사용).
+    - Response 객체 속성들
+       ok: 요청이 성공적인지 여부를 표현. 상태 코드가 200-299일 경우 true.
+       status: HTTP 상태 코드.
+       statusText: 상태 메시지.
+       json(): 응답을 JSON 형태로 파싱하여 반환.
+       text(): 응답을 텍스트 형태로 반환.
+
+    * fetch의 작동 원리
+    - fetch는 네트워크 요청을 보내고, 그 응답을 Promise 객체로 반환.
+    기본적인 작동 원리:
+       요청 전송:
+           fetch 함수는 요청을 전송할 URL과 옵션 객체를 인자로 받아 서버에 네트워크 요청 전송.
+       응답 반환:
+           서버로부터 응답을 받으면, fetch는 이 응답을 담고 있는 Response 객체를 Promise로 반환.
+           이 Promise는 요청이 성공적으로 완료되었을 때 resolved 상태로 변하고, 실패할 때 rejected 상태로 변함.
+       응답 처리:
+           응답이 fulfilled 상태로 변하면, Promise의 then 메서드를 사용하여 응답 처리 가능.
+           실패한 경우, catch 메서드를 사용하여 오류를 처리.
+       응답 데이터 접근:
+           Response 객체는 .json(), .text(), .blob() 등의 메서드를 제공하여 응답 본문을 다양한 형식으로 변환 가능.
+
+    * ⚠️ Fetch 사용 시 가장 중요한 특징 (2단계 변환):
+    fetch()가 성공하면 서버로부터 'HTTP 응답 전체(Response)'를 받음. 이 안에는 헤더, 상태코드 등이 섞여있음.
+    우리가 원하는 '실제 데이터'만 쏙 빼내려면 body 내용을 변환하는 과정이 필요함.
+       - response.text() : 서버가 String(문자열)이나 HTML, plain text를 줄 때 사용
+       - response.json() : 서버가 객체(JSON) 데이터를 줄 때 사용 (자동 파싱해 줌)
+    * Then 방식 예시 (체이닝):
+    fetch('/api/basic')                             // 1. 서버에 요청 (Promise 반환)
+       .then(response => response.text())           // 2. 응답을 받아서 문자열로 변환 (또 Promise 반환)
+       .then(data => { console.log(data); })        // 3. 변환이 완료된 진짜 데이터를 가지고 화면 처리
+       .catch(err => { console.error(err); });      // 4. 네트워크 에러 등 처리
+    ------------------------------------------------------------------------------------------
+    3. ASYNC / AWAIT (동기식처럼 보이는 비동기) : 현대 자바스크립트의 표준
+    ------------------------------------------------------------------------------------------
+    - Promise와 Fetch의 .then().then() 꼬리물기 형식도 코드가 길어지면 가독성이 낮아짐.
+    - 이를 해결하기 위해 "비동기 코드를 마치 일반적인 동기식 코드(위에서 아래로 한 줄씩)처럼"
+      직관적으로 작성할 수 있게 만든 문법.
+    - 내부적으로는 여전히 Promise로 작동.
+    * 핵심 규칙 2가지:
+       1) await 키워드는 반드시 "async가 붙은 함수 내부"에서만 사용 가능.
+       2) await 뒤에는 반드시 "Promise를 반환하는 작업(예: fetch)"이 와야 함.
+    * 작동 원리:
+       - 코드를 실행하다가 'await'를 만나면, 해당 Promise가 완료(Fulfilled)될 때까지
+         그 함수 내부의 실행을 잠시 일시 정지(대기).
+       - 결과가 나오면 변수에 값을 쏙 대입하고 다음 줄로 넘어감.
+    * 에러 처리:
+       - .then().catch() 대신, 자바스크립트 전통의 'try { ... } catch (error) { ... }' 문법을 사용.
+    * Async/Await 방식 예시:
+        async function loadData() {
+           try {
+               // await 덕분에 .then() 없이 응답 객체를 바로 변수에 담음
+               const response = await fetch('/api/basic');
+               * // 텍스트 변환 작업도 기다렸다가 깔끔하게 상수에 담음
+               const data = await response.text();
+               * console.log(data); // 동기 코드처럼 자연스럽게 사용 가능
+           } catch (error) {
+               // 요청 실패나 변환 실패 등 모든 에러가 이쪽으로 잡힘
+               console.error("에러가 발생했어요:", error);
+           }
+        }
+    ==========================================================================================
 
 ** 알아두기 **
 📌 JPA 엔티티 설계 시 @Data 어노테이션 사용 금지!
@@ -110,10 +224,5 @@
 📌 DB 데이터 타입과 자바 래퍼(Wrapper) 클래스의 1:1 매핑 규칙 준수!
     스프링 부트 환경에서 ddl-auto=validate 옵션이 켜져 있으면 자바 코드의 필드 타입과
     실제 가동 중인 DB 테이블의 컬럼 속성을 엄격하게 대조함.
-    예를 들어 PostgreSQL의 smallint 타입 컬럼을 자바의 Boolean으로 매핑하려고 하면
-    하이버네이트 유효성 검증 단계에서 예외를 던지며 구동에 실패함.
     참/거짓 상태값을 나타낼 때는 DB 테이블도 boolean 타입, 자바 엔티티도 Boolean 타입으로 일치시켜 주거나,
-    숫자로 관리할 때는 DB의 smallint와 자바의 Integer/Short를 매치시켜 타이핑 미스매치 오류를 원천 차단해야 함.
-
-
-
+    숫자로 관리할  때는 DB의 smallint와 자바의 Integer/Short를 매치시켜 타이핑 미스매치 오류를 원천 차단해야 함.

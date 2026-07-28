@@ -207,9 +207,10 @@ public class BoardController {
 	
 	/**
 	 * 게시글 추천
+	 *
 	 * @param boardNum 게시글 번호
-	 * @param user	   인증 정보
-	 * @return		   /board/read
+	 * @param user     인증 정보
+	 * @return /board/read
 	 */
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/like" + "/{boardNum}")
@@ -219,6 +220,69 @@ public class BoardController {
 	) {
 		bs.like(boardNum, user.getUsername());
 		log.debug("추천수 증가!");
+		return "redirect:/board/read?boardNum=" + boardNum;
+	}
+	
+	//-------------------------------------------------------------------------
+	
+	/**
+	 * 게시글 삭제
+	 *
+	 * @param boardNum 게시글 번호
+	 * @param user     인증 정보
+	 * @return /board/delete
+	 */
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/delete" + "/{boardNum}")
+	public String delete(
+			@PathVariable("boardNum") int boardNum,
+			@AuthenticationPrincipal UserDetails user) {
+		
+		bs.delete(boardNum, user.getUsername(), uploadPath);
+		log.debug("삭제 완료");
+		
+		return "redirect:/board/read?boardNum=" + boardNum;
+	}
+	//-------------------------------------------------------------------------
+	
+	/**
+	 * 게시글 수정 페이지로 이동
+	 * @param boardNum 수정할 게시글 번호
+	 * @param model
+	 * @return updateForm.html
+	 */
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/update" + "/{boardNum}")
+	public String update(
+			@PathVariable("boardNum") int boardNum,
+			Model model) {
+		BoardDTO dto = bs.select(boardNum);
+		model.addAttribute("board",dto);
+		return "boardView/updateForm";
+	}
+	
+	/**
+	 * 게시글 수정 처리
+	 * @param boardNum		수정할 글 번호
+	 * @param dto			수정할 글 정보
+	 * @param user			로그인한 사용자 정보
+	 * @param upload		업로드된 첨부파일
+	 * @return				/obard/read
+	 */
+	@PreAuthorize("isAuthenticated()")
+	@PostMapping("/update" + "/{boardNum}")
+	public String update(
+			@PathVariable("boardNum") int boardNum,
+			@ModelAttribute BoardDTO dto,
+			@AuthenticationPrincipal UserDetails user,
+			MultipartFile upload) {
+		dto.setBoardNum(boardNum);
+		dto.setMemberId(user.getUsername());
+		
+		log.debug("dto: {}", dto);
+		bs.update(dto, uploadPath, upload);
+		log.debug("수정 완료");
+
 		return "redirect:/board/read?boardNum=" + boardNum;
 	}
 }

@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,19 +44,20 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BoardService {
 	
-	private final MemberRespository 	mr;
-	private final BoardRepository 		br;
-	private final ReplyRepository 		rr;
-	private final BoardLikeRepository 	blr;
-	private final FileManager 			fileManager;
+	private final MemberRespository mr;
+	private final BoardRepository br;
+	private final ReplyRepository rr;
+	private final BoardLikeRepository blr;
+	private final FileManager fileManager;
 	
 	//------------------------------------------------------------------------------
 	
 	/**
 	 * 게시글 저장
-	 * @param boardDTO		저장할 글 정보
-	 * @param uploadPath	파일 저장할 경로
-	 * @param upload		업로드한 파일
+	 *
+	 * @param boardDTO   저장할 글 정보
+	 * @param uploadPath 파일 저장할 경로
+	 * @param upload     업로드한 파일
 	 */
 	public void write(BoardDTO boardDTO, String uploadPath, MultipartFile upload) {
 		
@@ -100,10 +102,11 @@ public class BoardService {
 	
 	/**
 	 * 검색 후 지정한 한 페이지 분량의 글 목록 조회
-	 * @param page			현재 페이지
-	 * @param pageSize		한 페이지당 글 수
-	 * @param searchType	검색 대상 (title, contents, id, all)
-	 * @param searchWord	검색어
+	 *
+	 * @param page       현재 페이지
+	 * @param pageSize   한 페이지당 글 수
+	 * @param searchType 검색 대상 (title, contents, id, all)
+	 * @param searchWord 검색어
 	 * @return 한 페이지의 글 목록
 	 */
 	public Page<BoardDTO> searchBoardList(int page, int pageSize, String searchType, String searchWord) {
@@ -138,9 +141,9 @@ public class BoardService {
 			dtoList.add(dto);
 		}
 		Page<BoardDTO> boardDTOPage = new PageImpl<>(
-				dtoList, 							// DTO로 변환된 List
-				entityPage.getPageable(), 			// 몇 번째 페이지인지, 몇 개씩 조회했는지 등
-				entityPage.getTotalElements()		// 조건에 맞는 전체 데이터 개수
+				dtoList,                            // DTO로 변환된 List
+				entityPage.getPageable(),            // 몇 번째 페이지인지, 몇 개씩 조회했는지 등
+				entityPage.getTotalElements()        // 조건에 맞는 전체 데이터 개수
 		);
 		
 		return boardDTOPage;
@@ -148,6 +151,7 @@ public class BoardService {
 	
 	/**
 	 * 게시글 1개 조회
+	 *
 	 * @param boardNum 글 번호
 	 * @return 글 정보
 	 */
@@ -176,14 +180,15 @@ public class BoardService {
 	
 	/**
 	 * 파일 다운로드
-	 * @param boardNum		글 번호
-	 * @param uploadPath	파일 저장 경로
-	 * @return				클라이언트로 보낼 *상태코드 + HTTP 헤더 + 응답 데이터(Body)* 객체
+	 *
+	 * @param boardNum   글 번호
+	 * @param uploadPath 파일 저장 경로
+	 * @return 클라이언트로 보낼 *상태코드 + HTTP 헤더 + 응답 데이터(Body)* 객체
 	 */
 	public ResponseEntity<Resource> download(int boardNum, String uploadPath) {
-	
+		
 		// 1. DB 조회
-		BoardEntity board = br.findById(boardNum).orElseThrow(()-> new EntityNotFoundException("게시글 없음"));
+		BoardEntity board = br.findById(boardNum).orElseThrow(() -> new EntityNotFoundException("게시글 없음"));
 		
 		if (board.getFileName() == null || board.getOriginalName() == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "첨부파일이 없습니다.");
@@ -195,12 +200,12 @@ public class BoardService {
 		Path baseDir = Paths.get(uploadPath).toAbsolutePath().normalize();
 		Path filePath = baseDir.resolve(board.getFileName()).normalize();
 		
-		if(!filePath.startsWith(baseDir)) {
+		if (!filePath.startsWith(baseDir)) {
 			throw new ResponseStatusException(
 					HttpStatus.BAD_REQUEST, "잘못된 파일 경로입니다."
 			);
 		}
-		if(!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
+		if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
 			throw new ResponseStatusException(
 					HttpStatus.NOT_FOUND, "파일이 서버에 없습니다."
 			);
@@ -245,7 +250,7 @@ public class BoardService {
 	
 	public ResponseEntity<Resource> preview(int boardNum, String uploadPath) {
 		// 1. DB 조회
-		BoardEntity board = br.findById(boardNum).orElseThrow(()-> new EntityNotFoundException("게시글 없음"));
+		BoardEntity board = br.findById(boardNum).orElseThrow(() -> new EntityNotFoundException("게시글 없음"));
 		
 		if (board.getFileName() == null || board.getOriginalName() == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "첨부파일이 없습니다.");
@@ -257,12 +262,12 @@ public class BoardService {
 		Path baseDir = Paths.get(uploadPath).toAbsolutePath().normalize();
 		Path filePath = baseDir.resolve(board.getFileName()).normalize();
 		
-		if(!filePath.startsWith(baseDir)) {
+		if (!filePath.startsWith(baseDir)) {
 			throw new ResponseStatusException(
 					HttpStatus.BAD_REQUEST, "잘못된 파일 경로입니다."
 			);
 		}
-		if(!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
+		if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
 			throw new ResponseStatusException(
 					HttpStatus.NOT_FOUND, "파일이 서버에 없습니다."
 			);
@@ -272,7 +277,7 @@ public class BoardService {
 			// 3. MIME 타입 분석
 			// probeContentType : 이 파일이 무슨 종류의 파일인지(이미지, PDF, 텍스트 인지 체크)
 			String contentType = Files.probeContentType(filePath);
-			if(contentType == null) {
+			if (contentType == null) {
 				contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
 			}
 			
@@ -301,6 +306,7 @@ public class BoardService {
 	
 	/**
 	 * 게시글 추천수 증가
+	 *
 	 * @param boardNum
 	 * @param username
 	 */
@@ -310,7 +316,7 @@ public class BoardService {
 		MemberEntity member = mr.findById(username).orElseThrow(() -> new EntityNotFoundException("유저 없음"));
 		
 		// 이미 추천한 이력이 있는지 확인
-		Optional<BoardLikeEntity> alreadyLike = blr.findByBoardAndMember(board,member);
+		Optional<BoardLikeEntity> alreadyLike = blr.findByBoardAndMember(board, member);
 		
 		if (alreadyLike.isPresent()) {
 			// 이미 추천했다면 예외 던짐
@@ -324,5 +330,81 @@ public class BoardService {
 		
 		// 추천수 증가
 		board.increaseLikeCount();
+	}
+	//-------------------------------------------------------------------------
+	
+	/**
+	 * 게시글 삭제
+	 *
+	 * @param boardNum   삭제할 글 번호
+	 * @param username   로그인한 아이디
+	 * @param uploadPath 삭제할 첨부파일 경로
+	 */
+	public void delete(int boardNum, String username, String uploadPath) {
+		BoardEntity boardEntity = br.findById(boardNum).orElseThrow(() -> new EntityNotFoundException("게시글없음"));
+		
+		// 게시글 삭제 처리
+		if (!boardEntity.getMember().getMemberId().equals(username)) {
+			throw new RuntimeException("삭제 권한 없음");
+		}
+		br.delete(boardEntity);
+		
+		// 파일 삭제
+		try {
+			if (boardEntity.getFileName() != null) {
+				boolean result = fileManager.deleteFile(uploadPath, boardEntity.getFileName());
+				if (!result) {
+					log.debug("> 삭제 대상 파일이 이미 없음.");
+				}
+				
+			}
+		} catch (IOException e) {
+			throw new FileStorageException("파일이 없습니다.");
+		}
+	}
+	
+	//-------------------------------------------------------------------------
+	public BoardDTO select(int boardNum) {
+		BoardEntity entity = br.findById(boardNum).orElseThrow(() -> new EntityNotFoundException("게시글 없음"));
+		BoardDTO dto = BoardDTO.convertToBoardDTO(entity);
+		return dto;
+	}
+	//-------------------------------------------------------------------------
+	
+	/**
+	 * 게시글 수정 처리
+	 *
+	 * @param dto        수정할 글 정보
+	 * @param uploadPath 파일 경로
+	 * @param upload     업로드된 파일
+	 */
+	public void update(BoardDTO dto, String uploadPath, MultipartFile upload) {
+		BoardEntity entity = br.findById(dto.getBoardNum()).orElseThrow(() -> new EntityNotFoundException("게시글 없음"));
+		
+		if (!entity.getMember().getMemberId().equals(dto.getMemberId())) {
+			throw new RuntimeException("수정 권한이 없습니다.");
+		}
+		
+		// 전달된 정보 수정
+		entity.setTitle(dto.getTitle());
+		entity.setContents(dto.getContents());
+		entity.setUpdateDate(LocalDateTime.now());
+		
+		// 업로드된 파일 유무에 따라 기존 파일 삭제 후 새로 저장
+		if (upload != null && !upload.isEmpty()) {
+			// 파일 삭제
+			try {
+				if (entity.getFileName() != null) {
+					fileManager.deleteFile(uploadPath, entity.getFileName());
+					
+				}
+				String fileName = fileManager.saveFile(uploadPath, upload);
+				entity.setOriginalName(upload.getOriginalFilename());
+				entity.setFileName(fileName);
+			} catch (IOException e) {
+				throw new FileStorageException("파일이 없습니다.");
+			}
+		}
+		
 	}
 }

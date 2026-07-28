@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8">
+	<title>1. concept.html</title>
+	<style>
+		button{
+			font-size: 30px;
+		}
+		pre{
+			font-size: 20px;
+		}
+		.result-box{
+			font-size: 20px;
+		}
+	</style>
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			const resultBox = document.querySelector('.result-box');
+			
+			// 1. Promise
+			document.querySelector('#btnPromise').addEventListener('click', function () {
+				// 실행 함수 - 실행 중 성공하면 resolve, 실패하면 reject
+				const myPromise = new Promise((resolve, reject) => {
+					setTimeout(() => {
+						let success = true;
+						
+						if (success) {
+							resolve("이행 완료! (Fulfilled!)");
+						} else {
+							reject("실패! (Rejected)");
+						}
+					}, 2000);
+				});
+				myPromise.then(msg => resultBox.textContent = msg)
+						.catch(error => console.log('catch: ', error))
+						.finally(console.log('무조건 실행'));
+				
+				resultBox.textContent = "대기 중(Pending).. 2초 뒤 약속이 이행됩니다.";
+				
+			});
+			
+			// 2. Fetch (Then 방식)
+			document.querySelector('#btnFetch').addEventListener('click', function () {
+				// 실패했을 경우를 작성 안 해도 됨.
+				fetch('/api/basic').then(response => response.text()).then(data => {
+					resultBox.textContent = `Then 방식 결과: ${data}`;
+				});
+			});
+			
+		});
+	</script>
+</head>
+<body>
+	<header style="text-align: center;">
+		<h1>[ 1. 비동기 개념과 Fetch 기본 문법 ]</h1>
+	</header>
+	<pre>
+		Promise:        비동기 작업의 결과를 나타내는 객체
+		Fetch:          서버 통신을 수행하고 Promise를 반환하는 함수
+		Async/Await:    Promise를 마치 일반 코드처럼 쉽고 읽기 편하게 작성해주는 문법
+	</pre>
+	<div style="text-align: center;">
+		<button id="btnPromise">1. Promise 작동원리</button>
+		<button id="btnFetch">2. Fetch 기본 (Then 방식)</button>
+		<button id="btnAsync">3. Fetch + Async/Await 방식</button>
+		<div class="result-box"
+		     style="margin-top: 20px; padding: 10px; background: #f0f0f0;">
+			버튼을 눌러보세요.
+		</div>
+	</div>
+</body>
+</html>

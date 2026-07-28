@@ -1,0 +1,74 @@
+Spring Data JPA – 메서드 네이밍 규칙 완전 정리
+공식사이트: https://docs.spring.io/spring-data/jpa/reference/jpa/query-methods.html
+
+1. Query Method 기본 구조
+Spring Data JPA 는메서드이름만으로SQL 없이도자동으로JPQL 을생성함.
+find + By + 조회할속성명+ 연산자+ 조건식형태로구성됨.
+
+예시:
+findByTitleContaining(String keyword, Pageable pageable)
+→ Title 필드기준, LIKE %keyword%
+
+findByMember_MemberId(String memberId)
+→ 연관관계필드탐색(Member → memberId)
+
+2. 접두사(Keyword)
+find...By / read...By / query...By : 조회
+count...By : 개수조회
+exists...By : 존재여부확인
+delete...By / remove...By : 조건삭제
+
+3. 조회할 속성명(Property)
+엔티티의필드명을그대로사용해야함(DB 컬럼명아님)
+연관관계탐색시언더스코어(_)로구분하여접근
+
+예:
+findByMember_MemberId
+findByPost_User_Address_Zipcode
+
+4. 연산자(Operator)
+연산자 설명 SQL 변환
+Containing 포함검색 LIKE %x%
+StartingWith 시작문자열 LIKE x%
+EndingWith 끝문자열 LIKE %x
+IgnoreCase 대소문자무시 LOWER(field)=LOWER(x)
+GreaterThan > >
+GreaterThanEqual ≥ >=
+LessThan < <
+LessThanEqual ≤ <=
+Between 값사이검색 BETWEEN
+IsNull / IsNotNull NULL 여부 IS NULL / IS NOT NULL
+In / NotIn 컬렉션포함여부 IN / NOT IN
+
+5. 조건식(Criteria)
+And : 모든조건만족
+Or : 조건중하나만족
+
+예:
+findByTitleContainingAndWriterContaining
+findByEmailEndingWithOrNameStartingWith
+
+6. 정렬(OrderBy)
+OrderBy + 필드명+ Asc/Desc 형태로정렬가능
+
+예:
+findByAgeGreaterThanOrderByAgeAsc
+findByCreatedAtBetweenOrderByCreatedAtDesc
+
+7. 페이징(Pageable)
+메서드에Pageable pageable 추가하면페이징자동처리가능
+
+예:
+Page<Member> findByNameContaining(String name, Pageable pageable);
+
+8. Query Method 동작 원리
+1) Spring 이Repository 인터페이스스캔
+2) 메서드이름파싱
+3) JPQL 자동생성
+4) 프록시객체가EntityManager 에실행요청
+→ 우리는메서드이름만작성하면됨
+
+9. 자주 하는 실수
+❌DB 컬럼명을메서드에사용함→ 엔티티필드명사용해야함
+❌점(.) 사용하여연관관계탐색→ 언더스코어(_) 사용해야함
+❌너무복잡한메서드네이밍→ @Query 사용고려( JPQL or QueryDSL )

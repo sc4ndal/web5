@@ -42,6 +42,10 @@ public class WebSecurityConfig {
 			, "/board/read"                // 게시판 글 읽기
 			, "/board/download"                // 파일 다운로드
 			, "/board/preview"                // 이미지 미리보기
+			// 추가
+			, "/reply/list/**"				// 게시글의 댓글 목록
+			, "/async/**"					// 비동기 처리 페이지
+			, "/api/**"						// 비동기 처리 API
 			, "/error/**"
 	);
 	

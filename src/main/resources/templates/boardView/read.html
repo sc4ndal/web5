@@ -20,7 +20,7 @@
 					location.href = `/board/like/${bNum}`;
 				});
 			}
-			
+			// 2. 글 삭제
 			const deleteBtn = document.querySelector('#deleteBtn');
 			if (deleteBtn) {
 				deleteBtn.addEventListener('click', function () {
@@ -28,15 +28,15 @@
 					if (confirm("삭제하시겠습니까?")) {
 						location.href = `/board/delete/${bNum}`;
 					}
-				})
+				});
 			}
-			
+			// 3. 글 수정
 			const updateBtn = document.querySelector('#updateBtn');
 			if (updateBtn) {
 				updateBtn.addEventListener('click', function () {
 					const bNum = updateBtn.dataset.num;
 					location.href = `/board/update/${bNum}`;
-				})
+				});
 			}
 		});
 		
@@ -56,11 +56,11 @@
 		</tr>
 		<tr>
 			<th>작성일</th>
-			<td th:text="${#temporals.format(board.createDate, 'yy-mm-dd hh:mm:ss')}"></td>
+			<td th:text="${#temporals.format(board.createDate, 'yy-MM-dd HH:mm:ss')}"></td>
 		</tr>
 		<tr>
 			<th>수정일</th>
-			<td th:text="${#temporals.format(board.updateDate, 'yy-mm-dd hh:mm:ss')}"></td>
+			<td th:text="${#temporals.format(board.updateDate, 'yy-MM-dd HH:mm:ss')}"></td>
 		</tr>
 		<tr>
 			<th>조회수</th>
