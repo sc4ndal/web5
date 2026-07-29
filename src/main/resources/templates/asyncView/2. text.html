@@ -4,10 +4,64 @@
 <head>
 	<meta charset="UTF-8">
 	<title>2. text.html</title>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			// 1. 서버로 데이터 보내기
+			document.querySelector('.btn-send').addEventListener('click', async () => {
+				const msg = document.querySelector('.input-msg').value;
+				await fetch(`/api/text/send?msg=${encodeURIComponent(msg)}`);
+				alert('서버 콘솔을 확인하세요');
+			});
+			
+			document.querySelector('.btn-receive').addEventListener('click', async () => {
+				const response = await fetch('/api/text/receive');
+				const data = await response.text();
+				document.querySelector('.res-get').textContent = data;
+			});
+			
+			// 3. 데이터 주고 받기
+			document.querySelector('.btn-exchange').addEventListener('click', async () => {
+				const params = new URLSearchParams();
+				params.append('n1', document.querySelector('.num1').value);
+				params.append('n2', document.querySelector('.num2').value);
+				
+				// URLSearchParams(): 파라미터를 쉽게 다룰 수 있도록 도와줌(key-value)
+				const response = await fetch('/api/text/exchange', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					body: params
+				});
+				const data = await response.text();
+				document.querySelector('.res-post').textContent = data;
+			});
+		});
+	</script>
 </head>
 <body>
 	<header>
-		<h1>2. concept.html</h1>
+		<h1>[ 2. 텍스트 데이터 ]</h1>
 	</header>
+	<div>
+		<h3>1. 서버로 데이터 보내기 (클라이언트 -> 서버)</h3>
+		<input type="text" class="input-msg" id="input-msg" value="안녕하세요">
+		<button class="btn-send">보내기 (GET)</button>
+	</div>
+	
+	<div>
+		<h3>2. 서버에서 데이터 받기 (서버 -> 클라이언트)</h3>
+		<button class="btn-receive">가져오기 (GET)</button>
+		<p>결과: <span class="res-get"></span></p>
+	</div>
+	
+	<div>
+		<h3>3. 데이터 주고 받기</h3>
+		<input type="number" name="num1" id="num1" class="num1" value="10">
+		+
+		<input type="number" name="num2" id="num2" class="num2" value="20">
+		<button class="btn-exchange">계산 요청 (POST)</button>
+		<p>결과 : <span class="res-post"></span></p>
+	</div>
 </body>
 </html>

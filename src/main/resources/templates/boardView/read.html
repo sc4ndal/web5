@@ -38,82 +38,133 @@
 					location.href = `/board/update/${bNum}`;
 				});
 			}
+			
+			const replyWrite = document.querySelector('#replyWrite');
+			if (replyWrite) {
+				replyWrite.addEventListener('click', async () => {
+					const loginUserId = document.querySelector('#loginUserId').value;
+					const boardNum = document.querySelector('#boardNum').value;
+					const replyContents = document.querySelector('#replyContents').value;
+					
+					// const response = await fetch(`/board/${loginUserId}`, {})
+					
+				});
+			}
 		});
 		
 	</script>
 </head>
 <body>
-<header>
-	<h1>[ 게시글 읽기 ]</h1>
-</header>
-<section>
-	<table>
+	<header>
+		<h1>[ 게시글 읽기 ]</h1>
+	</header>
+	<section>
+		<table>
+			<tr>
+				<th style="width: 100px;">작성자</th>
+				<td style="width: 400px;">
+					<span th:text="|${board.memberName} (${board.memberId})|"></span>
+				</td>
+			</tr>
+			<tr>
+				<th>작성일</th>
+				<td th:text="${#temporals.format(board.createDate, 'yy-MM-dd HH:mm:ss')}"></td>
+			</tr>
+			<tr>
+				<th>수정일</th>
+				<td th:text="${#temporals.format(board.updateDate, 'yy-MM-dd HH:mm:ss')}"></td>
+			</tr>
+			<tr>
+				<th>조회수</th>
+				<td th:text="${board.viewCount}"></td>
+			</tr>
+			<tr>
+				<th>추천수</th>
+				<td th:text="${board.likeCount}"></td>
+			</tr>
+			<tr>
+				<th>제목</th>
+				<td th:text="${board.title}"></td>
+			</tr>
+			<tr>
+				<th>내용</th>
+				<td th:text="${board.contents}"></td>
+			</tr>
+			<tr>
+				<th>파일첨부</th>
+				<td>
+					<a th:href="@{/board/download(boardNum=${board.boardNum})}"
+					   th:text="${board.originalName}"></a>
+					<!--				이미지 미리보기 -->
+					<th:block th:if="${board.originalName != null}"
+					          th:with="fn=${#strings.toLowerCase(board.originalName)},
+					                    isImg=${fn.matches('.*[.](png|jpg|jpeg|gif|webp)$')}">
+						<th:block th:if="${isImg}">
+							<div style="margin-top: 10px;">
+								<img alt="첨부 이미지 미리보기"
+								     style="max-width: 420px; width: 100%; border: 1px solid #ddd;"
+								     th:onerror="alert('미리보기 이미지를 불러올 수 없습니다.');"
+								     th:src="@{/board/preview(boardNum=${board.boardNum})}">
+							</div>
+						</th:block>
+						<th:block th:unless="${isImg}">
+							<div style="margin-top: 8px; color:#666;">
+								(이미지 파일이 아니라 미리보기를 지원하지않습니다.)
+							</div>
+						</th:block>
+					</th:block>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<div>
+			<th:block sec:authorize="isAuthenticated()">
+				<button id="likeBtn" th:data-num="${board.boardNum}">추천</button>
+			</th:block>
+			<th:block th:if="${#authentication.name == board.memberId}">
+				<button id="deleteBtn" th:data-num="${board.boardNum}">삭제</button>
+				<button id="updateBtn" th:data-num="${board.boardNum}">수정</button>
+			</th:block>
+		</div>
+		
+	<!--	댓글  -->
+	<!--	로그인 사용자 ID & 게시글 번호 -->
+		<input type="hidden" id="loginUserId"
+		       sec:authorize="isAuthenticated()" th:value="${#authentication.name}">
+		<input type="hidden" id="boardNum" th:value="${board.boardNum}">
+	<!--	댓글 작성 폼 -->
+		<div sec:authorize="isAuthenticated()">
+				<input type="text" name="replyContents" id="replyContents"
+				       style="width: 500px;" placeholder="댓글을 입력하세요.">
+				<button id="replyWrite">댓글 작성</button>
+		</div>
+		
+	<!--	댓글 목록 출력 영역 (JS가 직접 랜더링) -->
+		<table class="reply">
+			<tbody id="replyListBody">
+	<!--		JS에 의해 동적 생성    -->
+			
+			</tbody>
+		</table>
+	</section>
+
+<!--	댓글 출력 탬플릿 (화면에 출력되지 않는 HTML 템플릿)    -->
+	<template>
 		<tr>
-			<th style="width: 100px;">작성자</th>
-			<td style="width: 400px;">
-				<span th:text="|${board.memberName} (${board.memberId})|"></span>
+			<td class="replyId">
+				<a class="replyUserLink"></a>
+			</td>
+			<td class="replytext"></td>
+			<td class="replydate" style="width: 20%;"></td>
+			<td class="white btnArea">
+				<a href="#" class="replyDeleteBtn">
+					<img src="/img/icon_delete.png" alt="삭제">
+				</a>
+				<a href="#" class="replyUpdateBtn">
+					<img src="/img/icon_edit.png" alt="수정">
+				</a>
 			</td>
 		</tr>
-		<tr>
-			<th>작성일</th>
-			<td th:text="${#temporals.format(board.createDate, 'yy-MM-dd HH:mm:ss')}"></td>
-		</tr>
-		<tr>
-			<th>수정일</th>
-			<td th:text="${#temporals.format(board.updateDate, 'yy-MM-dd HH:mm:ss')}"></td>
-		</tr>
-		<tr>
-			<th>조회수</th>
-			<td th:text="${board.viewCount}"></td>
-		</tr>
-		<tr>
-			<th>추천수</th>
-			<td th:text="${board.likeCount}"></td>
-		</tr>
-		<tr>
-			<th>제목</th>
-			<td th:text="${board.title}"></td>
-		</tr>
-		<tr>
-			<th>내용</th>
-			<td th:text="${board.contents}"></td>
-		</tr>
-		<tr>
-			<th>파일첨부</th>
-			<td>
-				<a th:href="@{/board/download(boardNum=${board.boardNum})}"
-				   th:text="${board.originalName}"></a>
-				<!--				이미지 미리보기 -->
-				<th:block th:if="${board.originalName != null}"
-				          th:with="fn=${#strings.toLowerCase(board.originalName)},
-				                    isImg=${fn.matches('.*[.](png|jpg|jpeg|gif|webp)$')}">
-					<th:block th:if="${isImg}">
-						<div style="margin-top: 10px;">
-							<img alt="첨부 이미지 미리보기"
-							     style="max-width: 420px; width: 100%; border: 1px solid #ddd;"
-							     th:onerror="alert('미리보기 이미지를 불러올 수 없습니다.');"
-							     th:src="@{/board/preview(boardNum=${board.boardNum})}">
-						</div>
-					</th:block>
-					<th:block th:unless="${isImg}">
-						<div style="margin-top: 8px; color:#666;">
-							(이미지 파일이 아니라 미리보기를 지원하지않습니다.)
-						</div>
-					</th:block>
-				</th:block>
-			</td>
-		</tr>
-	</table>
-	<br>
-	<div>
-		<th:block sec:authorize="isAuthenticated()">
-			<button id="likeBtn" th:data-num="${board.boardNum}">추천</button>
-		</th:block>
-		<th:block th:if="${#authentication.name == board.memberId}">
-			<button id="deleteBtn" th:data-num="${board.boardNum}">삭제</button>
-			<button id="updateBtn" th:data-num="${board.boardNum}">수정</button>
-		</th:block>
-	</div>
-</section>
+	</template>
 </body>
 </html>
